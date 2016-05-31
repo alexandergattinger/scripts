@@ -8,9 +8,15 @@ public class projController : Photon.MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
+		lastPosition = transform.position;
+		StartCoroutine ("destroyAfter");
 	}
-	
+	IEnumerator destroyAfter(){
+		yield return new WaitForSeconds (5);
+		PhotonNetwork.Destroy (photonView);
+	}
+
+
 	// Update is called once per frame
 	void Update () {
 		control ();
@@ -18,12 +24,15 @@ public class projController : Photon.MonoBehaviour {
 	}
 
 	void control(){
-		transform.Translate (Vector3.forward * Time.deltaTime * 5);
+		transform.Translate (Vector3.forward * Time.deltaTime * 50);
 	}
 
 	void collisionDetection(){
 		if(Physics.Raycast(lastPosition, (transform.position-lastPosition).normalized,out hit,Vector3.Distance(transform.position,lastPosition))){
-			hit.collider.GetComponent<PhotonView> ().RPC ("receiveDamage", PhotonTargets.All,"50_" + PhotonNetwork.player.ID.ToString());
+			if (hit.collider.GetComponent<PhotonView> ()) {
+				hit.collider.GetComponent<PhotonView> ().RPC ("receiveDamage", PhotonTargets.All, "50_" + PhotonNetwork.player.ID.ToString ());
+			}
+			Debug.Log (hit.collider.name);
 			PhotonNetwork.Destroy (GetComponent<PhotonView> ());
 		}
 		lastPosition = transform.position;
